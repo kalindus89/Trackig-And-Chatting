@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "577520435984",
+    "project_id": "trackig-and-chatting",
+    "storage_bucket": "trackig-and-chatting.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:577520435984:android:6cfb43e289094363b29b95",
+        "android_client_info": {
+          "package_name": "com.trackigandchatting"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "577520435984-6i9gp8k1rrgk4re1jgu741td0guok6a6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.trackigandchatting",
+            "certificate_hash": "59477c5328ab8554ad8d11b0fed93e5e3f17e746"
+          }
+        },
+        {
+          "client_id": "577520435984-gc0b7crisnbuuuu2ifgbneut3ip91gg5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB937Cywmz_FTQQuZBg7bgamyFSxyaF7z8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "577520435984-gc0b7crisnbuuuu2ifgbneut3ip91gg5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
