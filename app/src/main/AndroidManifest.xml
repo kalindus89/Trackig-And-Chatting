@@ -10,6 +10,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TrackigAndChatting">
         <activity
+            android:name=".user_login.VerifyUserMobileNumber"
+            android:exported="false" />
+        <activity
             android:name=".MainLoginActivity"
             android:exported="false" />
         <activity

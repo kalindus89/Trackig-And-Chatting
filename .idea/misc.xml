@@ -3,11 +3,16 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/drawable-v24/edittext_background6.xml" value="0.33611111111111114" />
+        <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/drawable-v24/theme_button.xml" value="0.33611111111111114" />
+        <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/drawable-v24/top_background.xml" value="0.33611111111111114" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/drawable-v24/white_button.xml" value="0.33611111111111114" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/font/acme.xml" value="0.33611111111111114" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/font/coiny.xml" value="0.33611111111111114" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/layout/activity_main.xml" value="0.2957427536231884" />
+        <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/layout/activity_main_login.xml" value="0.2957427536231884" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/layout/activity_splash.xml" value="0.2" />
+        <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/layout/activity_verify_user_mobile_number.xml" value="0.2957427536231884" />
       </map>
     </option>
   </component>
