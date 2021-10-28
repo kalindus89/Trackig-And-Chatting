@@ -34,7 +34,7 @@
             android:layout_marginRight="20dp"
             android:fontFamily="sans-serif-smallcaps"
             android:lineSpacingExtra="4dp"
-            android:text="Chat app will send\n OTP to your entered number"
+            android:text="Save Your Profile"
             android:textAlignment="center"
             android:textColor="#fff"
             android:textSize="20sp" />
@@ -65,43 +65,44 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout">
 
 
-        <com.hbb20.CountryCodePicker
-            android:id="@+id/countrycodepicker"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginLeft="100dp"
-            android:layout_marginTop="60dp"
-            android:layout_marginRight="100dp"
-            app:ccp_areaCodeDetectedCountry="true"
-            app:ccp_autoDetectCountry="true" />
 
+        <androidx.cardview.widget.CardView
+            android:id="@+id/getuserimage"
+            android:layout_width="130dp"
+            android:layout_height="130dp"
+            android:layout_above="@+id/getusername"
+            android:layout_centerHorizontal="true"
+            android:backgroundTint="#D6E7E8"
+            android:layout_gravity="center"
+            android:layout_marginTop="60dp"
+            app:cardCornerRadius="130dp">
+
+            <ImageView
+                android:id="@+id/getuserimageinimageview"
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:scaleType="centerCrop"
+                android:layout_gravity="center"
+                android:src="@drawable/profile_icon"/>
+
+
+        </androidx.cardview.widget.CardView>
 
         <EditText
             android:id="@+id/editTextTextPersonName2"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginStart="80dp"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="20dp"
             android:layout_marginEnd="80dp"
             android:background="@drawable/edittext_background6"
             android:ems="10"
-            android:hint="Phone number"
-            android:inputType="number"
+            android:hint="Enter your name here"
             android:textAlignment="center"
+            android:inputType="text"
             android:textColor="#000000"
             android:textColorHint="#858584"
             android:textSize="18sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:lineSpacingExtra="4dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginStart="80dp"
-            android:layout_marginEnd="80dp"
-            android:text="(Eg: 777123456. No country code)"
-            android:textColor="#A5A5A5"
-            android:textSize="12sp" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/sendotpbutton"
@@ -116,7 +117,7 @@
             android:gravity="center"
             android:paddingLeft="40dp"
             android:paddingRight="40dp"
-            android:text="Send OTP"
+            android:text="Save Profile"
             android:textColor="@color/white"
             android:textSize="15sp" />
 
@@ -129,7 +130,7 @@
         android:lineSpacingExtra="4dp"
         android:text="@string/all_rights_reserved"
         android:textAlignment="center"
-        android:textColor="@color/main_color"
+        android:textColor="#3ACDC8"
         android:textSize="15sp"
         android:layout_marginBottom="30dp"
         app:layout_constraintBottom_toBottomOf="parent"

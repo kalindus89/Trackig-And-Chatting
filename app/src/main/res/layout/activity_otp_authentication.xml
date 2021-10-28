@@ -34,7 +34,7 @@
             android:layout_marginRight="20dp"
             android:fontFamily="sans-serif-smallcaps"
             android:lineSpacingExtra="4dp"
-            android:text="Chat app will send\n OTP to your entered number"
+            android:text="Enter The OTP Which You Received"
             android:textAlignment="center"
             android:textColor="#fff"
             android:textSize="20sp" />
@@ -65,15 +65,7 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout">
 
 
-        <com.hbb20.CountryCodePicker
-            android:id="@+id/countrycodepicker"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginLeft="100dp"
-            android:layout_marginTop="60dp"
-            android:layout_marginRight="100dp"
-            app:ccp_areaCodeDetectedCountry="true"
-            app:ccp_autoDetectCountry="true" />
+
 
 
         <EditText
@@ -81,11 +73,11 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginStart="80dp"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="60dp"
             android:layout_marginEnd="80dp"
             android:background="@drawable/edittext_background6"
             android:ems="10"
-            android:hint="Phone number"
+            android:hint="Enter the OTP"
             android:inputType="number"
             android:textAlignment="center"
             android:textColor="#000000"
@@ -99,12 +91,12 @@
             android:layout_marginTop="5dp"
             android:layout_marginStart="80dp"
             android:layout_marginEnd="80dp"
-            android:text="(Eg: 777123456. No country code)"
+            android:text="@string/no_country_letters"
             android:textColor="#A5A5A5"
             android:textSize="12sp" />
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/sendotpbutton"
+            android:id="@+id/verifyOtpButton"
             android:layout_width="match_parent"
             android:layout_height="45dp"
             android:layout_centerHorizontal="true"
@@ -116,7 +108,7 @@
             android:gravity="center"
             android:paddingLeft="40dp"
             android:paddingRight="40dp"
-            android:text="Send OTP"
+            android:text="@string/verify_otp"
             android:textColor="@color/white"
             android:textSize="15sp" />
 
@@ -129,7 +121,7 @@
         android:lineSpacingExtra="4dp"
         android:text="@string/all_rights_reserved"
         android:textAlignment="center"
-        android:textColor="@color/main_color"
+        android:textColor="#3ACDC8"
         android:textSize="15sp"
         android:layout_marginBottom="30dp"
         app:layout_constraintBottom_toBottomOf="parent"

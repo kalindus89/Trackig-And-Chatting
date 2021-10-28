@@ -31,7 +31,7 @@ public class MainLoginActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(MainLoginActivity.this, VerifyUserMobileNumber.class);
                 startActivity(intent);
-                MainLoginActivity.this.finish();
+                finish();
             }
         });
 
@@ -40,7 +40,7 @@ public class MainLoginActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(MainLoginActivity.this, VerifyUserMobileNumber.class);
                 startActivity(intent);
-                MainLoginActivity.this.finish();
+                finish();
             }
         });
     }

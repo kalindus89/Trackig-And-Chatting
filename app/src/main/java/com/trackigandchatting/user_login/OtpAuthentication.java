@@ -8,25 +8,24 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 
-import com.trackigandchatting.MainLoginActivity;
 import com.trackigandchatting.R;
 
-public class VerifyUserMobileNumber extends AppCompatActivity {
+public class OtpAuthentication extends AppCompatActivity {
 
-    Button sendotpbutton;
+    Button verifyOtpButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_verify_user_mobile_number);
+        setContentView(R.layout.activity_otp_authentication);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        sendotpbutton=findViewById(R.id.sendotpbutton);
+        verifyOtpButton=findViewById(R.id.verifyOtpButton);
 
-        sendotpbutton.setOnClickListener(new View.OnClickListener() {
+        verifyOtpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                Intent intent = new Intent(VerifyUserMobileNumber.this, OtpAuthentication.class);
+                Intent intent = new Intent(OtpAuthentication.this, CreateProfile.class);
                 startActivity(intent);
                 finish();
             }
