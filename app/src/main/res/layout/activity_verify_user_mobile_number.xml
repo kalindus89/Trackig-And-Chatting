@@ -22,7 +22,7 @@
             android:layout_height="70dp"
             android:layout_gravity="center"
             android:onClick="Finish"
-            android:src="@drawable/new_logo" />
+            android:src="@drawable/new_logo_purple" />
 
         <TextView
             android:id="@+id/textheading"
@@ -112,7 +112,7 @@
             android:layout_marginTop="50dp"
             android:layout_marginStart="80dp"
             android:layout_marginEnd="80dp"
-            android:background="@color/main_color"
+            android:background="@color/purple_700"
             android:gravity="center"
             android:paddingLeft="40dp"
             android:paddingRight="40dp"
@@ -138,7 +138,7 @@
         android:lineSpacingExtra="4dp"
         android:text="@string/all_rights_reserved"
         android:textAlignment="center"
-        android:textColor="@color/main_color"
+        android:textColor="@color/purple_700"
         android:textSize="15sp"
         android:layout_marginBottom="30dp"
         app:layout_constraintBottom_toBottomOf="parent"

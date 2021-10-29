@@ -22,7 +22,7 @@
             android:layout_height="70dp"
             android:layout_gravity="center"
             android:onClick="Finish"
-            android:src="@drawable/new_logo" />
+            android:src="@drawable/new_logo_purple" />
 
         <TextView
             android:id="@+id/textheading"
@@ -100,7 +100,7 @@
             android:layout_marginStart="80dp"
             android:layout_marginTop="50dp"
             android:layout_marginEnd="80dp"
-            android:background="@color/main_color"
+            android:background="@color/purple_700"
             android:gravity="center"
             android:paddingLeft="40dp"
             android:paddingRight="40dp"
@@ -115,17 +115,17 @@
             android:layout_gravity="center"
             android:layout_marginTop="20dp"
             android:text="Didn't Receive? Change Your Number"
-            android:textColor="@color/purple_200"
-            android:textSize="15sp"/>
+            android:textColor="@color/purple_700"
+            android:textSize="15sp" />
 
-            <ProgressBar
-                android:id="@+id/progressbarofotpauth"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_below="@id/sendotpbutton"
-                android:layout_gravity="center"
-                android:layout_marginTop="30dp"
-                android:visibility="invisible" />
+        <ProgressBar
+            android:id="@+id/progressbarofotpauth"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_below="@id/sendotpbutton"
+            android:layout_gravity="center"
+            android:layout_marginTop="30dp"
+            android:visibility="invisible" />
 
     </LinearLayout>
 
@@ -137,7 +137,7 @@
         android:lineSpacingExtra="4dp"
         android:text="@string/all_rights_reserved"
         android:textAlignment="center"
-        android:textColor="#3ACDC8"
+        android:textColor="@color/purple_700"
         android:textSize="15sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
