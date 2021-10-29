@@ -9,9 +9,9 @@
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="180dp"
+        android:background="@drawable/top_background"
         android:gravity="center"
         android:orientation="vertical"
-        android:background="@drawable/top_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -64,12 +64,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout">
 
-
-
-
-
         <EditText
-            android:id="@+id/editTextTextPersonName2"
+            android:id="@+id/getotp"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginStart="80dp"
@@ -87,10 +83,10 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:lineSpacingExtra="4dp"
-            android:layout_marginTop="5dp"
             android:layout_marginStart="80dp"
+            android:layout_marginTop="5dp"
             android:layout_marginEnd="80dp"
+            android:lineSpacingExtra="4dp"
             android:text="@string/no_country_letters"
             android:textColor="#A5A5A5"
             android:textSize="12sp" />
@@ -101,8 +97,8 @@
             android:layout_height="45dp"
             android:layout_centerHorizontal="true"
             android:layout_gravity="center"
-            android:layout_marginTop="50dp"
             android:layout_marginStart="80dp"
+            android:layout_marginTop="50dp"
             android:layout_marginEnd="80dp"
             android:background="@color/main_color"
             android:gravity="center"
@@ -112,18 +108,37 @@
             android:textColor="@color/white"
             android:textSize="15sp" />
 
+        <TextView
+            android:id="@+id/changenumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:text="Didn't Receive? Change Your Number"
+            android:textColor="@color/purple_200"
+            android:textSize="15sp"/>
+
+            <ProgressBar
+                android:id="@+id/progressbarofotpauth"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_below="@id/sendotpbutton"
+                android:layout_gravity="center"
+                android:layout_marginTop="30dp"
+                android:visibility="invisible" />
+
     </LinearLayout>
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="30dp"
         android:lineSpacingExtra="4dp"
         android:text="@string/all_rights_reserved"
         android:textAlignment="center"
         android:textColor="#3ACDC8"
         android:textSize="15sp"
-        android:layout_marginBottom="30dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

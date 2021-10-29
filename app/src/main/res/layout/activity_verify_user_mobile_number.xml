@@ -77,7 +77,7 @@
 
 
         <EditText
-            android:id="@+id/editTextTextPersonName2"
+            android:id="@+id/getphonenumber"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginStart="80dp"
@@ -119,6 +119,15 @@
             android:text="Send OTP"
             android:textColor="@color/white"
             android:textSize="15sp" />
+
+        <ProgressBar
+            android:id="@+id/progressbarofmain"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:layout_below="@id/sendotpbutton"
+            android:layout_marginTop="30dp"
+            android:visibility="invisible"/>
 
     </LinearLayout>
 

@@ -7,6 +7,9 @@ import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.trackigandchatting.user_login.VerifyUserMobileNumber;
+
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -23,9 +26,16 @@ public class SplashActivity extends AppCompatActivity {
             @Override
             public void run() {
 
-                Intent intent = new Intent(SplashActivity.this, MainLoginActivity.class);
-                startActivity(intent);
-                SplashActivity.this.finish();
+                if(FirebaseAuth.getInstance().getCurrentUser()!=null){
+                    Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                }else{
+                    Intent intent = new Intent(SplashActivity.this, VerifyUserMobileNumber.class);
+                    startActivity(intent);
+                    SplashActivity.this.finish();
+                }
 
             }
         },SPLASH_TIMER);
