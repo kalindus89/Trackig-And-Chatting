@@ -21,55 +21,15 @@ import com.trackigandchatting.models.ChatsModel;
 
 public class ChatFragment extends Fragment {
 
-    FirebaseAuth firebaseAuth;
-    FirebaseFirestore firebaseFirestore;
 
-    RecyclerView recyclerViewChat;
-    FirebaseAllChatFriendAdapter allChatsAdapter;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View v =inflater.inflate(R.layout.fragment_chat,null);
 
-        firebaseAuth = FirebaseAuth.getInstance();
-        firebaseFirestore = FirebaseFirestore.getInstance();
-        recyclerViewChat = v.findViewById(R.id.recyclerViewChat);
-
-        syncChatPeopleFromFirestore();
-
         return v;
     }
 
-    private void syncChatPeopleFromFirestore() {
-
-        Query query = firebaseFirestore.collection("Users").whereNotEqualTo("uid",firebaseAuth.getUid());
-        FirestoreRecyclerOptions<ChatsModel> allChats = new FirestoreRecyclerOptions.Builder<ChatsModel>().setQuery(query, ChatsModel.class).build();
-
-        allChatsAdapter = new FirebaseAllChatFriendAdapter(getContext(),allChats);
-        recyclerViewChat.setHasFixedSize(true);
-        LinearLayoutManager linearLayoutManager =new LinearLayoutManager(getContext());
-        linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
-        recyclerViewChat.setLayoutManager(linearLayoutManager);
-        recyclerViewChat.setAdapter(allChatsAdapter);
-        allChatsAdapter.notifyDataSetChanged();
-    }
-    @Override
-    public void onStart() {
-        super.onStart();
-        allChatsAdapter.startListening();
-        recyclerViewChat.setAdapter(allChatsAdapter);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-
-        if(allChatsAdapter!=null)
-        {
-            allChatsAdapter.stopListening();
-            //noteAdapter.startListening();
-        }
-    }
 
 }

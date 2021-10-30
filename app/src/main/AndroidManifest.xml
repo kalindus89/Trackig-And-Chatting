@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TrackigAndChatting">
         <activity
+            android:name=".ContactListActivity"
+            android:exported="false" />
+        <activity
             android:name=".specific_chat.SpecificChatActivity"
             android:exported="false" />
         <activity

@@ -12,10 +12,12 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.trackigandchatting.user_login.CreateProfile;
 
@@ -25,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     TabLayout tabLayout;
     PagerAdapterForFragments pagerAdapter;
     ViewPager viewPager;
+    FloatingActionButton newChat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         toolBar.setOverflowIcon(drawable);
 
         tabLayout = findViewById(R.id.tabLayout);
+        newChat = findViewById(R.id.newChat);
 
         viewPager = findViewById(R.id.fragmentContainer);
         pagerAdapter = new PagerAdapterForFragments(getSupportFragmentManager(), 3);
@@ -62,6 +66,14 @@ public class MainActivity extends AppCompatActivity {
         });
 
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+
+        newChat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, ContactListActivity.class);
+                startActivity(intent);
+            }
+        });
 
     }
 
