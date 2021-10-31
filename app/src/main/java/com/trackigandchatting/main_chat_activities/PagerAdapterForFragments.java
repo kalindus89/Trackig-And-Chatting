@@ -1,4 +1,4 @@
-package com.trackigandchatting;
+package com.trackigandchatting.main_chat_activities;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;

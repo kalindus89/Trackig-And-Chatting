@@ -1,4 +1,4 @@
-package com.trackigandchatting.specific_chat;
+package com.trackigandchatting.main_chat_activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 

@@ -1,8 +1,6 @@
 package com.trackigandchatting.chat_adapters;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,8 +22,8 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 import com.trackigandchatting.R;
+import com.trackigandchatting.SessionManagement;
 import com.trackigandchatting.models.ChatsModel;
-import com.trackigandchatting.specific_chat.SpecificChatActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,19 +33,19 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class FirebaseAllChatFriendAdapter extends FirestoreRecyclerAdapter<ChatsModel,FirebaseAllChatFriendAdapter.ChatsViewHolder> {
+public class AllFriendsAdapter extends FirestoreRecyclerAdapter<ChatsModel, AllFriendsAdapter.ChatsViewHolder> {
 
     Activity context;
     FirestoreRecyclerOptions<ChatsModel> fireStoreRecyclerOptions;
 
-    public FirebaseAllChatFriendAdapter(@NonNull Activity context, FirestoreRecyclerOptions<ChatsModel> fireStoreRecyclerOptions) {
+    public AllFriendsAdapter(@NonNull Activity context, FirestoreRecyclerOptions<ChatsModel> fireStoreRecyclerOptions) {
         super(fireStoreRecyclerOptions);
         this.context = context;
         this.fireStoreRecyclerOptions = fireStoreRecyclerOptions;
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull FirebaseAllChatFriendAdapter.ChatsViewHolder holder, int position, @NonNull ChatsModel model) {
+    protected void onBindViewHolder(@NonNull AllFriendsAdapter.ChatsViewHolder holder, int position, @NonNull ChatsModel model) {
 
         holder.particularusername.setText(model.getName());
         String uri=model.getImage();
@@ -90,7 +88,7 @@ public class FirebaseAllChatFriendAdapter extends FirestoreRecyclerAdapter<Chats
                                 Toast.makeText(context, "Already created", Toast.LENGTH_SHORT).show();
 
                             } else {
-                                crateChatRoom(chatRoomId,FirebaseAuth.getInstance().getUid(),model.getUid());
+                                crateChatRoom(chatRoomId,model.getName(),FirebaseAuth.getInstance().getUid(),model.getUid(),model.getImage());
 
                             }
                         } else {
@@ -103,15 +101,22 @@ public class FirebaseAllChatFriendAdapter extends FirestoreRecyclerAdapter<Chats
 
     }
 
-    private void crateChatRoom(String chatRoomId, String user_1, String user_2) {
+    private void crateChatRoom(String chatRoomId, String name,String user_1, String user_2, String imageUrl) {
 
         Map<String, Object> note = new HashMap<>();
-        note.put("user_1", user_1);
-        note.put("user_2", user_2);
+        note.put("uid", user_2);
+        note.put("name", name);
+        note.put("image",imageUrl);
         note.put("lastUpdateTime", new Date());
 
+        Map<String, Object> note2 = new HashMap<>();
+        note2.put("uid", user_1);
+        note2.put("name", SessionManagement.getName(context));
+        note2.put("image", SessionManagement.getImageUrl(context));
+        note2.put("lastUpdateTime", new Date());
+
         FirebaseFirestore.getInstance().collection("Users").document(user_1).collection("myChats").document(chatRoomId).set(note);
-        FirebaseFirestore.getInstance().collection("Users").document(user_2).collection("myChats").document(chatRoomId).set(note).addOnCompleteListener(new OnCompleteListener<Void>() {
+        FirebaseFirestore.getInstance().collection("Users").document(user_2).collection("myChats").document(chatRoomId).set(note2).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 context.finish();

@@ -12,13 +12,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TrackigAndChatting">
         <activity
-            android:name=".ContactListActivity"
+            android:name=".main_chat_activities.FriendsListActivity"
             android:exported="false" />
         <activity
-            android:name=".specific_chat.SpecificChatActivity"
+            android:name=".main_chat_activities.SpecificChatActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".main_chat_activities.MainActivity"
             android:exported="false" />
         <activity
             android:name=".user_login.CreateProfile"

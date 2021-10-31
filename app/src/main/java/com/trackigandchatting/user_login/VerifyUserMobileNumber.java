@@ -18,8 +18,6 @@ import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
 import com.hbb20.CountryCodePicker;
-import com.trackigandchatting.MainActivity;
-import com.trackigandchatting.MainLoginActivity;
 import com.trackigandchatting.R;
 
 import java.util.concurrent.TimeUnit;

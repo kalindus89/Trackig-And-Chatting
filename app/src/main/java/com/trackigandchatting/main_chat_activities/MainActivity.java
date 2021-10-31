@@ -1,4 +1,4 @@
-package com.trackigandchatting;
+package com.trackigandchatting.main_chat_activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,9 +16,11 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.auth.FirebaseAuth;
+import com.trackigandchatting.R;
+import com.trackigandchatting.SplashActivity;
 import com.trackigandchatting.user_login.CreateProfile;
 
 public class MainActivity extends AppCompatActivity {
@@ -70,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         newChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, ContactListActivity.class);
+                Intent intent = new Intent(MainActivity.this, FriendsListActivity.class);
                 startActivity(intent);
             }
         });
@@ -90,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Setting is clicked", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.logout:
+                FirebaseAuth.getInstance().signOut();
                 Intent intent2 = new Intent(MainActivity.this, SplashActivity.class);
                 startActivity(intent2);
                 break;

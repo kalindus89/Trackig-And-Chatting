@@ -30,8 +30,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.trackigandchatting.MainActivity;
+import com.trackigandchatting.main_chat_activities.MainActivity;
 import com.trackigandchatting.R;
+import com.trackigandchatting.SessionManagement;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -181,6 +182,9 @@ public class CreateProfile extends AppCompatActivity {
 
                 progressbarofsetProfile.setVisibility(View.INVISIBLE);
                 saveProfile.setEnabled(true);
+
+                SessionManagement.setUserDetails(getApplicationContext(),name,imageUriAccessToken);
+
                 Intent intent = new Intent(CreateProfile.this, MainActivity.class);
                 startActivity(intent);
                 finish();

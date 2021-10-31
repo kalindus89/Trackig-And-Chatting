@@ -1,4 +1,4 @@
-package com.trackigandchatting;
+package com.trackigandchatting.main_chat_activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -11,15 +11,17 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.trackigandchatting.chat_adapters.FirebaseAllChatFriendAdapter;
+import com.trackigandchatting.R;
+import com.trackigandchatting.chat_adapters.AllFriendsAdapter;
 import com.trackigandchatting.models.ChatsModel;
 
-public class ContactListActivity extends AppCompatActivity {
+public class FriendsListActivity extends AppCompatActivity {
+
     FirebaseAuth firebaseAuth;
     FirebaseFirestore firebaseFirestore;
-
     RecyclerView recyclerViewChat;
-    FirebaseAllChatFriendAdapter allChatsAdapter;
+    AllFriendsAdapter allChatsAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,7 +31,7 @@ public class ContactListActivity extends AppCompatActivity {
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseFirestore = FirebaseFirestore.getInstance();
-        recyclerViewChat = findViewById(R.id.recyclerViewChat);
+        recyclerViewChat = findViewById(R.id.recyclerViewFriendList);
 
         syncChatPeopleFromFirestore();
     }
@@ -39,7 +41,7 @@ public class ContactListActivity extends AppCompatActivity {
         Query query = firebaseFirestore.collection("Users").whereNotEqualTo("uid",firebaseAuth.getUid());
         FirestoreRecyclerOptions<ChatsModel> allChats = new FirestoreRecyclerOptions.Builder<ChatsModel>().setQuery(query, ChatsModel.class).build();
 
-        allChatsAdapter = new FirebaseAllChatFriendAdapter(this,allChats);
+        allChatsAdapter = new AllFriendsAdapter(this,allChats);
         recyclerViewChat.setHasFixedSize(true);
         LinearLayoutManager linearLayoutManager =new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
