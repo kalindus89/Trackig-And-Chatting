@@ -1,6 +1,7 @@
 package com.trackigandchatting.chat_adapters;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +24,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 import com.trackigandchatting.R;
 import com.trackigandchatting.SessionManagement;
+import com.trackigandchatting.main_chat_activities.SpecificChatActivity;
 import com.trackigandchatting.models.ChatsModel;
 
 import java.util.ArrayList;
@@ -56,12 +58,11 @@ public class ChattingFriendsAdapter extends FirestoreRecyclerAdapter<ChatsModel,
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               /* Intent intent=new Intent(context, SpecificChatActivity.class);
+                Intent intent=new Intent(context, SpecificChatActivity.class);
                 intent.putExtra("name",model.getName());
-                intent.putExtra("receiveruid",model.getUid());
+                intent.putExtra("chatId",fireStoreRecyclerOptions.getSnapshots().getSnapshot(holder.getAbsoluteAdapterPosition()).getId());
                 intent.putExtra("imageuri",model.getImage());
-                context.startActivity(intent);*/
-
+                context.startActivity(intent);
             }
         });
 

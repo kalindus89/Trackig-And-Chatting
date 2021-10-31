@@ -10,9 +10,13 @@
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/drawable-v24/top_background.xml" value="0.33611111111111114" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/drawable-v24/white_button.xml" value="0.33611111111111114" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/drawable/ic_baseline_add_24.xml" value="0.3828125" />
+        <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/drawable/ic_baseline_arrow_back_24.xml" value="0.3828125" />
+        <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/drawable/ic_baseline_arrow_forward_24.xml" value="0.3828125" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/drawable/ic_baseline_phone_android_24.xml" value="0.3828125" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/drawable/ic_launcher_background.xml" value="0.3828125" />
+        <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/drawable/messagebackground.xml" value="0.3828125" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/drawable/more_icon.xml" value="0.33611111111111114" />
+        <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/drawable/senderchatdrawable.xml" value="0.3828125" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/font/acme.xml" value="0.33611111111111114" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/font/coiny.xml" value="0.33611111111111114" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/layout/activity_contact_list.xml" value="0.36666666666666664" />
@@ -20,6 +24,7 @@
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/layout/activity_main.xml" value="0.2957427536231884" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/layout/activity_main_login.xml" value="0.2957427536231884" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/layout/activity_otp_authentication.xml" value="0.2957427536231884" />
+        <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/layout/activity_specific_chat.xml" value="0.36666666666666664" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/layout/activity_splash.xml" value="0.2" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/layout/activity_verify_user_mobile_number.xml" value="0.2957427536231884" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/layout/current_chat_item_layout.xml" value="0.2957427536231884" />
@@ -27,6 +32,8 @@
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/layout/fragment_chat.xml" value="0.2957427536231884" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/layout/fragment_chatl.xml" value="0.2957427536231884" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/layout/fragment_status.xml" value="0.2957427536231884" />
+        <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/layout/recieverchatlayout.xml" value="0.36666666666666664" />
+        <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/layout/senderchatlayout.xml" value="0.36666666666666664" />
         <entry key="..\:/Work/Android/AndroidStudioProjects/AndroidStudioProjectsAll/GoogleMaps/TrackigAndChatting/app/src/main/res/menu/menu.xml" value="0.36666666666666664" />
       </map>
     </option>

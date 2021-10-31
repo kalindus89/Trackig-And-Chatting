@@ -64,11 +64,7 @@ public class AllFriendsAdapter extends FirestoreRecyclerAdapter<ChatsModel, AllF
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               /* Intent intent=new Intent(context, SpecificChatActivity.class);
-                intent.putExtra("name",model.getName());
-                intent.putExtra("receiveruid",model.getUid());
-                intent.putExtra("imageuri",model.getImage());
-                context.startActivity(intent);*/
+
                 List<String> commonChatRoomId = new ArrayList();
                 commonChatRoomId.add(FirebaseAuth.getInstance().getUid().toLowerCase(Locale.ROOT));
                 commonChatRoomId.add(model.getUid().toLowerCase(Locale.ROOT));
