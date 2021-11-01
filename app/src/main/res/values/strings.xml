@@ -3,4 +3,5 @@
     <string name="verify_otp">Verify OTP</string>
     <string name="no_country_letters">(Eg: 123456. No country letters)</string>
     <string name="all_rights_reserved">All rights reserved</string>
+    <string name="google_map_api_key">AIzaSyB937Cywmz_FTQQuZBg7bgamyFSxyaF7z8</string>
 </resources>

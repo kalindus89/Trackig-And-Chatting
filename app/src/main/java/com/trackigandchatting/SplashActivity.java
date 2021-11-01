@@ -37,8 +37,8 @@ public class SplashActivity extends AppCompatActivity {
         logo.setAnimation(AnimationUtils.loadAnimation(this,R.anim.uptodown));
         appName.setAnimation(AnimationUtils.loadAnimation(this,R.anim.downtoup));
 
-        logo.animate().translationY(-1400).setDuration(700).setStartDelay(1780);
-        appName.animate().translationY(1400).setDuration(700).setStartDelay(1780);
+       /* logo.animate().translationY(-1400).setDuration(700).setStartDelay(1780);
+        appName.animate().translationY(1400).setDuration(700).setStartDelay(1780);*/
 
         new Handler().postDelayed(new Runnable() {
             @Override
