@@ -33,12 +33,12 @@
 
     <RelativeLayout
         android:id="@+id/groupContacts"
-        android:layout_marginTop="20dp"
         android:layout_width="match_parent"
-        android:layout_marginRight="20dp"
-        android:layout_marginLeft="20dp"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/toolBar">
+        android:layout_below="@+id/toolBar"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="20dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -70,22 +70,23 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:scaleType="centerCrop"
                 android:layout_gravity="center"
-                app:tint="@color/white"
-                android:src="@drawable/ic_baseline_person_add_24" />
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_baseline_person_add_24"
+                app:tint="@color/white" />
 
         </androidx.cardview.widget.CardView>
 
     </RelativeLayout>
+
     <RelativeLayout
         android:id="@+id/newContacts"
-        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
-        android:layout_marginRight="20dp"
-        android:layout_marginLeft="20dp"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/groupContacts">
+        android:layout_below="@+id/groupContacts"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="20dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -126,11 +127,34 @@
 
     </RelativeLayout>
 
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewFriendList"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/newContacts" />
+        android:layout_below="@+id/newContacts"
+        android:background="@color/white"
+        android:orientation="vertical"
+        android:weightSum="100">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewFriendList"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="50"/>
+
+        <RelativeLayout
+            android:id="@+id/map_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="50">
+
+            <fragment
+                android:id="@+id/user_list_map"
+                class="com.google.android.gms.maps.MapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </RelativeLayout>
+
+
+    </LinearLayout>
 
 </RelativeLayout>
