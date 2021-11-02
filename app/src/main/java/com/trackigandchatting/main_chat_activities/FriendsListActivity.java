@@ -1,6 +1,7 @@
 package com.trackigandchatting.main_chat_activities;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -22,15 +23,29 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.trackigandchatting.R;
 import com.trackigandchatting.chat_adapters.AllFriendsAdapter;
 import com.trackigandchatting.models.ChatsModel;
+import com.trackigandchatting.models.UserLocation;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FriendsListActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -40,7 +55,8 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
     AllFriendsAdapter allChatsAdapter;
     GoogleMap googleMap;
     FusedLocationProviderClient fusedLocationProviderClient;
-
+    MapFragment mapFragment;
+    LatLngBounds mMapBoundary;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,11 +67,61 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseFirestore = FirebaseFirestore.getInstance();
         recyclerViewChat = findViewById(R.id.recyclerViewFriendList);
+         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.user_list_map);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(FriendsListActivity.this);
-        showMap();
-        syncChatPeopleFromFirestore();
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getAllUserLocationsFromFirebase();
+                showMap();
+                syncChatPeopleFromFirestore();
+            }
+        });
+
+
     }
 
+    private void getAllUserLocationsFromFirebase() {
+
+        CollectionReference collectionReference =firebaseFirestore.collection("Users").document(firebaseAuth.getUid()).collection("myChats");
+        collectionReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+
+                for(QueryDocumentSnapshot queryDocumentSnapshot:value){
+
+                    getFriendGeoCode(queryDocumentSnapshot.get("uid").toString());
+                }
+
+            }
+        });
+
+    }
+    UserLocation userLocationForGeoPoints;
+    private void getFriendGeoCode(String uid) {
+
+
+        DocumentReference nycRef = firebaseFirestore.collection("UserCurrentLocation").document(uid);
+
+        nycRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        userLocationForGeoPoints=task.getResult().toObject(UserLocation.class);
+                       // System.out.println("aaaaaaaa333 "+userLocationForGeoPoints.getGeo_point().getLatitude()+" "+userLocationForGeoPoints.getGeo_point().getLongitude());
+                    } else {
+                        Toast.makeText(getApplicationContext(), "No document exist", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "Not ok big", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+    }
     private void showMap() {
 
         // if you use mapfragment then lifecycle methods are not needed
@@ -63,8 +129,23 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
         // https://developers.google.com/maps/documentation/android-sdk/reference/com/google/android/libraries/maps/MapView?hl=en
         //https://developers.google.com/maps/documentation/android-sdk/reference/com/google/android/libraries/maps/MapFragment?hl=en
 
-        MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.user_list_map);
+
         mapFragment.getMapAsync(this); //onMapReady method automatically call. your Default map
+
+    }
+
+    public void markOnMapForZoomBoundary(GeoPoint geoPoint){
+
+        //zoom specific area
+
+        double bottomBoundary=geoPoint.getLatitude()-.1;
+        double leftBoundary=geoPoint.getLongitude()-.1;
+        double topBoundary=geoPoint.getLatitude()+.1;
+        double rightBoundary=geoPoint.getLongitude()+.1;
+
+        mMapBoundary= new LatLngBounds(new LatLng(bottomBoundary,leftBoundary),new LatLng(topBoundary,rightBoundary));
+
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(mMapBoundary,0));
 
     }
 
@@ -106,8 +187,21 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
             public void onComplete(@NonNull Task<Location> task) {
 
                 Location location = (Location) task.getResult();
-                Toast.makeText(FriendsListActivity.this, "Latitude1: " + location.getLatitude() + " Longitude1: " + location.getLongitude(), Toast.LENGTH_SHORT).show();
-                markOnMap(location.getLatitude(), location.getLongitude(), 15,"My Location","Address: Nugegoda\nPhone Number: +94777");
+                //markOnMap(location.getLatitude(), location.getLongitude(), 15,"My Location","Address: Nugegoda\nPhone Number: +94777");
+
+                markOnMapForZoomBoundary((new GeoPoint(location.getLatitude(), location.getLongitude())));
+
+                Map<String, Object> userLocation = new HashMap<>();
+                userLocation.put("geo_point", (new GeoPoint(location.getLatitude(), location.getLongitude())));
+
+                firebaseFirestore.collection("UserCurrentLocation").document(firebaseAuth.getUid()).update(userLocation).
+                        addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                    }
+                });
+
 
             }
         });
@@ -117,8 +211,9 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         this.googleMap=googleMap;
-       // markOnMap(6.8649, 79.8997, 15,"My Location","Address: Nugegoda\nPhone Number: +94777");
+
         getLastKnowLocation();
+
         googleMap.getUiSettings().setZoomControlsEnabled(true);
         googleMap.getUiSettings().setCompassEnabled(true); // Compass not showing until you rotate the map
 

@@ -33,9 +33,11 @@ import com.google.firebase.storage.UploadTask;
 import com.trackigandchatting.main_chat_activities.MainActivity;
 import com.trackigandchatting.R;
 import com.trackigandchatting.SessionManagement;
+import com.trackigandchatting.models.UserLocation;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -168,13 +170,22 @@ public class CreateProfile extends AppCompatActivity {
 
     private void sendDataToCloudFirestore() {
 
-        DocumentReference documentReference = firebaseFirestore.collection("Users").document(firebaseAuth.getUid());
         Map<String, Object> userdata = new HashMap<>();
         userdata.put("name", name);
         userdata.put("image", imageUriAccessToken);
         userdata.put("uid", firebaseAuth.getUid());
         userdata.put("status", "Online");
 
+        UserLocation userLocation = new UserLocation();
+        userLocation.setImage(imageUriAccessToken);
+        userLocation.setName(name);
+        userLocation.setUid(firebaseAuth.getUid());
+        userLocation.setLastUpdateTime(new Date());
+        userLocation.setGeo_point(null);
+
+        firebaseFirestore.collection("UserCurrentLocation").document(firebaseAuth.getUid()).set(userLocation);
+
+        DocumentReference documentReference = firebaseFirestore.collection("Users").document(firebaseAuth.getUid());
         documentReference.set(userdata).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
