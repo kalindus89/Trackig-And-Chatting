@@ -15,22 +15,17 @@ import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.google.maps.android.ui.IconGenerator;
 import com.trackigandchatting.R;
-import com.trackigandchatting.models.ClusterMaker;
+import com.trackigandchatting.models.ClusterMarker;
 
-public class MyClusterManagerRenderer extends DefaultClusterRenderer<ClusterMaker> {
+public class MyClusterManagerRenderer extends DefaultClusterRenderer<ClusterMarker> {
 
     private final IconGenerator iconGenerator;
     private final ImageView imageView;
     private final int makerWidth;
     private final int makerHeight;
 
-    public MyClusterManagerRenderer(Context context, GoogleMap map, ClusterManager<ClusterMaker> clusterManager,
-                                    IconGenerator iconGenerator, ImageView imageView, int makerWidth, int makerHeight) {
+    public MyClusterManagerRenderer(Context context, GoogleMap map, ClusterManager<ClusterMarker> clusterManager) {
         super(context, map, clusterManager);
-        this.iconGenerator = iconGenerator;
-        this.imageView = imageView;
-        this.makerWidth = makerWidth;
-        this.makerHeight = makerHeight;
 
         iconGenerator= new IconGenerator(context.getApplicationContext());
         imageView= new ImageView(context.getApplicationContext());
@@ -43,7 +38,7 @@ public class MyClusterManagerRenderer extends DefaultClusterRenderer<ClusterMake
     }
 
     @Override
-    protected void onBeforeClusterItemRendered(@NonNull ClusterMaker item, @NonNull MarkerOptions markerOptions) {
+    protected void onBeforeClusterItemRendered(@NonNull ClusterMarker item, @NonNull MarkerOptions markerOptions) {
 
         imageView.setImageResource(item.getIconPicture());
         Bitmap icon= iconGenerator.makeIcon();
@@ -51,7 +46,7 @@ public class MyClusterManagerRenderer extends DefaultClusterRenderer<ClusterMake
     }
 
     @Override
-    protected boolean shouldRenderAsCluster(@NonNull Cluster<ClusterMaker> cluster) {
+    protected boolean shouldRenderAsCluster(@NonNull Cluster<ClusterMarker> cluster) {
         return  false;
     }
 }

@@ -1,5 +1,7 @@
 package com.trackigandchatting.main_chat_activities;
 
+import static android.content.ContentValues.TAG;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,6 +13,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -38,11 +41,15 @@ import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.maps.android.clustering.ClusterManager;
 import com.trackigandchatting.R;
 import com.trackigandchatting.chat_adapters.AllFriendsAdapter;
 import com.trackigandchatting.models.ChatsModel;
+import com.trackigandchatting.models.ClusterMarker;
 import com.trackigandchatting.models.UserLocation;
+import com.trackigandchatting.util.MyClusterManagerRenderer;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,6 +64,13 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
     FusedLocationProviderClient fusedLocationProviderClient;
     MapFragment mapFragment;
     LatLngBounds mMapBoundary;
+
+    private ClusterManager<ClusterMarker> mClusterManager;
+    private MyClusterManagerRenderer mClusterManagerRenderer;
+
+    private ArrayList<ClusterMarker> mClusterMarkers = new ArrayList<>();
+    private ArrayList<UserLocation> mUserLocations = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,7 +87,6 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getAllUserLocationsFromFirebase();
                 showMap();
                 syncChatPeopleFromFirestore();
             }
@@ -84,22 +97,23 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
 
     private void getAllUserLocationsFromFirebase() {
 
+
+
         CollectionReference collectionReference =firebaseFirestore.collection("Users").document(firebaseAuth.getUid()).collection("myChats");
         collectionReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
 
                 for(QueryDocumentSnapshot queryDocumentSnapshot:value){
-
-                    getFriendGeoCode(queryDocumentSnapshot.get("uid").toString());
+                    getFriendGeoCode(queryDocumentSnapshot.get("uid").toString(),value.size());
                 }
+
 
             }
         });
 
     }
-    UserLocation userLocationForGeoPoints;
-    private void getFriendGeoCode(String uid) {
+    private void getFriendGeoCode(String uid, int numberOfFriends) {
 
 
         DocumentReference nycRef = firebaseFirestore.collection("UserCurrentLocation").document(uid);
@@ -110,8 +124,15 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
-                        userLocationForGeoPoints=task.getResult().toObject(UserLocation.class);
-                       // System.out.println("aaaaaaaa333 "+userLocationForGeoPoints.getGeo_point().getLatitude()+" "+userLocationForGeoPoints.getGeo_point().getLongitude());
+                      //  userLocationForGeoPoints=task.getResult().toObject(UserLocation.class);
+
+                        mUserLocations.add(task.getResult().toObject(UserLocation.class));
+
+                        if(mUserLocations.size()==(numberOfFriends+1)){
+                            addMapMakers();
+                        }
+                        //System.out.println("aaaaaaaa2222 "+userLocationForGeoPoints.getGeo_point().getLatitude()+" "+userLocationForGeoPoints.getGeo_point().getLongitude());
+
                     } else {
                         Toast.makeText(getApplicationContext(), "No document exist", Toast.LENGTH_SHORT).show();
                     }
@@ -131,6 +152,66 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
 
 
         mapFragment.getMapAsync(this); //onMapReady method automatically call. your Default map
+
+    }
+
+
+    private void addMapMakers(){
+        // clusters use to customized markers.(with images and avatars. when map zoom out avatars combine together)
+        //but for project we use only single clusters. means not grouping when zoom out
+        // https://developers.google.com/maps/documentation/android-sdk/utility/marker-clustering?hl=en
+
+        if(googleMap != null){
+            if(mClusterManager == null){
+                mClusterManager = new ClusterManager<ClusterMarker>(getApplicationContext(), googleMap);
+            }
+
+            if(mClusterManagerRenderer == null){
+                mClusterManagerRenderer = new MyClusterManagerRenderer(
+                        getApplicationContext(),
+                        googleMap,
+                        mClusterManager
+                );
+                mClusterManager.setRenderer(mClusterManagerRenderer);
+            }
+
+            for(UserLocation userLocation: mUserLocations){
+
+                Log.d(TAG, "addMapMarkers: location: " + userLocation.getGeo_point().toString());
+                try{
+                    String snippet = "";
+                    if(userLocation.getUid().equals(FirebaseAuth.getInstance().getUid())){
+                        snippet = "This is you";
+                    }
+                    else{
+                        snippet = "Determine route to " + userLocation.getName() + "?";
+                    }
+
+                    int avatar = R.drawable.cartman_cop; // set the default avatar
+                   /* try{
+                        avatar = Integer.parseInt(userLocation.getUser().getAvatar());
+                    }catch (NumberFormatException e){
+                        Log.d(TAG, "addMapMarkers: no avatar for " + userLocation.getUser().getUsername() + ", setting default.");
+                    }*/
+                    ClusterMarker newClusterMarker = new ClusterMarker(
+                            new LatLng(userLocation.getGeo_point().getLatitude(), userLocation.getGeo_point().getLongitude()),
+                            userLocation.getName(),
+                            snippet,
+                            avatar
+                    );
+                    mClusterManager.addItem(newClusterMarker);
+                    mClusterMarkers.add(newClusterMarker);
+
+                }catch (NullPointerException e){
+                    Log.e(TAG, "addMapMarkers: NullPointerException: " + e.getMessage() );
+                }
+
+            }
+            mClusterManager.cluster();
+
+            markOnMapForZoomBoundary((new GeoPoint(6.8649, 79.8997)));
+
+        }
 
     }
 
@@ -189,7 +270,8 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                 Location location = (Location) task.getResult();
                 //markOnMap(location.getLatitude(), location.getLongitude(), 15,"My Location","Address: Nugegoda\nPhone Number: +94777");
 
-                markOnMapForZoomBoundary((new GeoPoint(location.getLatitude(), location.getLongitude())));
+                //markOnMapForZoomBoundary((new GeoPoint(location.getLatitude(), location.getLongitude())));
+               // addMapMakers();
 
                 Map<String, Object> userLocation = new HashMap<>();
                 userLocation.put("geo_point", (new GeoPoint(location.getLatitude(), location.getLongitude())));
@@ -198,7 +280,13 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                         addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
+                        UserLocation userLocationForGeoPoints = new UserLocation();
+                        userLocationForGeoPoints.setUid(firebaseAuth.getUid());
+                        userLocationForGeoPoints.setGeo_point(new GeoPoint(location.getLatitude(), location.getLongitude()));
+                        userLocationForGeoPoints.setName("kalindu");
+                        mUserLocations.add(userLocationForGeoPoints);
 
+                        getAllUserLocationsFromFirebase();
                     }
                 });
 

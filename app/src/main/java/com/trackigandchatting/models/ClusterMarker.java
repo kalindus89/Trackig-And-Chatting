@@ -6,7 +6,7 @@ import androidx.annotation.Nullable;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.clustering.ClusterItem;
 
-public class ClusterMaker implements ClusterItem {
+public class ClusterMarker implements ClusterItem {
 
     // clusters use to customized markers.(with images and avatars. when map zoom out avatars combine together)
     //but for project we use only single clusters. means not grouping when zoom out
@@ -19,15 +19,14 @@ public class ClusterMaker implements ClusterItem {
     private  int iconPicture;
     private String user;
 
-    public ClusterMaker() {
+    public ClusterMarker() {
     }
 
-    public ClusterMaker(LatLng position, String title, String snippet, int iconPicture, String user) {
+    public ClusterMarker(LatLng position, String title, String snippet, int iconPicture) {
         this.position = position;
         this.title = title;
         this.snippet = snippet;
         this.iconPicture = iconPicture;
-        this.user = user;
     }
 
     @NonNull
