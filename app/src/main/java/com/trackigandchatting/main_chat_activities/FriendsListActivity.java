@@ -13,6 +13,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -71,6 +72,10 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
     private ArrayList<ClusterMarker> mClusterMarkers = new ArrayList<>();
     private ArrayList<UserLocation> mUserLocations = new ArrayList<>();
 
+    private Handler mHandler = new Handler();
+    private Runnable mRunnable;
+    private static final int LOCATION_UPDATE_INTERVAL = 3000;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,6 +97,81 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
             }
         });
 
+
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startUserLocationsRunnable();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopLocationUpdates();
+    }
+
+    //update users locations on map very 3s
+    private void startUserLocationsRunnable(){
+        Log.d(TAG, "startUserLocationsRunnable: starting runnable for retrieving updated locations.");
+        mHandler.postDelayed(mRunnable = new Runnable() {
+            @Override
+            public void run() {
+                retrieveUserLocations();
+                mHandler.postDelayed(mRunnable, LOCATION_UPDATE_INTERVAL);
+            }
+        }, LOCATION_UPDATE_INTERVAL);
+    }
+
+    private void stopLocationUpdates(){
+        mHandler.removeCallbacks(mRunnable);
+    }
+
+    private void retrieveUserLocations(){
+        Log.d(TAG, "retrieveUserLocations: retrieving location of all users in the chatroom.");
+
+        try{
+            for(final ClusterMarker clusterMarker: mClusterMarkers){
+
+                DocumentReference userLocationRef = FirebaseFirestore.getInstance()
+                        .collection("UserCurrentLocation")
+                        .document(clusterMarker.getuId());
+
+                userLocationRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()){
+
+                            final UserLocation updatedUserLocation = task.getResult().toObject(UserLocation.class);
+
+                            // update the location
+                            for (int i = 0; i < mClusterMarkers.size(); i++) {
+                                try {
+                                    if (mClusterMarkers.get(i).getuId().equals(updatedUserLocation.getUid())) {
+
+                                        LatLng updatedLatLng = new LatLng(
+                                                updatedUserLocation.getGeo_point().getLatitude(),
+                                                updatedUserLocation.getGeo_point().getLongitude()
+                                        );
+
+                                        mClusterMarkers.get(i).setPosition(updatedLatLng);
+                                        mClusterManagerRenderer.setUpdateMarker(mClusterMarkers.get(i));
+                                    }
+
+
+                                } catch (NullPointerException e) {
+                                    Log.e(TAG, "retrieveUserLocations: NullPointerException: " + e.getMessage());
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }catch (IllegalStateException e){
+            Log.e(TAG, "retrieveUserLocations: Fragment was destroyed during Firestore query. Ending query." + e.getMessage() );
+        }
 
     }
 
@@ -195,7 +275,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                             new LatLng(userLocation.getGeo_point().getLatitude(), userLocation.getGeo_point().getLongitude()),
                             userLocation.getName(),
                             snippet,
-                            avatar
+                            avatar,userLocation.getUid()
                     );
                     mClusterManager.addItem(newClusterMarker);
                     mClusterMarkers.add(newClusterMarker);
