@@ -97,8 +97,6 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
 
     private void getAllUserLocationsFromFirebase() {
 
-
-
         CollectionReference collectionReference =firebaseFirestore.collection("Users").document(firebaseAuth.getUid()).collection("myChats");
         collectionReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -259,7 +257,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
         });
     }
 
-    public void getLastKnowLocation() {
+    public void getUserKnowLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -268,28 +266,15 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
             public void onComplete(@NonNull Task<Location> task) {
 
                 Location location = (Location) task.getResult();
-                //markOnMap(location.getLatitude(), location.getLongitude(), 15,"My Location","Address: Nugegoda\nPhone Number: +94777");
-
-                //markOnMapForZoomBoundary((new GeoPoint(location.getLatitude(), location.getLongitude())));
-               // addMapMakers();
-
-                Map<String, Object> userLocation = new HashMap<>();
-                userLocation.put("geo_point", (new GeoPoint(location.getLatitude(), location.getLongitude())));
 
                 UserLocation userLocationForGeoPoints = new UserLocation();
                 userLocationForGeoPoints.setUid(firebaseAuth.getUid());
                 userLocationForGeoPoints.setGeo_point(new GeoPoint(location.getLatitude(), location.getLongitude()));
                 userLocationForGeoPoints.setName("kalindu");
+
                 mUserLocations.add(userLocationForGeoPoints);
                 getAllUserLocationsFromFirebase();
 
-                firebaseFirestore.collection("UserCurrentLocation").document(firebaseAuth.getUid()).update(userLocation).
-                        addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-
-                    }
-                });
 
 
             }
@@ -301,7 +286,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
     public void onMapReady(@NonNull GoogleMap googleMap) {
         this.googleMap=googleMap;
 
-        getLastKnowLocation();
+        getUserKnowLocation();
 
         googleMap.getUiSettings().setZoomControlsEnabled(true);
         googleMap.getUiSettings().setCompassEnabled(true); // Compass not showing until you rotate the map
