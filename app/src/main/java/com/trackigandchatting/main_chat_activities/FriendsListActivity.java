@@ -276,17 +276,18 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                 Map<String, Object> userLocation = new HashMap<>();
                 userLocation.put("geo_point", (new GeoPoint(location.getLatitude(), location.getLongitude())));
 
+                UserLocation userLocationForGeoPoints = new UserLocation();
+                userLocationForGeoPoints.setUid(firebaseAuth.getUid());
+                userLocationForGeoPoints.setGeo_point(new GeoPoint(location.getLatitude(), location.getLongitude()));
+                userLocationForGeoPoints.setName("kalindu");
+                mUserLocations.add(userLocationForGeoPoints);
+                getAllUserLocationsFromFirebase();
+
                 firebaseFirestore.collection("UserCurrentLocation").document(firebaseAuth.getUid()).update(userLocation).
                         addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        UserLocation userLocationForGeoPoints = new UserLocation();
-                        userLocationForGeoPoints.setUid(firebaseAuth.getUid());
-                        userLocationForGeoPoints.setGeo_point(new GeoPoint(location.getLatitude(), location.getLongitude()));
-                        userLocationForGeoPoints.setName("kalindu");
-                        mUserLocations.add(userLocationForGeoPoints);
 
-                        getAllUserLocationsFromFirebase();
                     }
                 });
 
