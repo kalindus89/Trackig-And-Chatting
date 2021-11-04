@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,6 +18,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -36,6 +38,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -54,13 +59,16 @@ import com.google.maps.GeoApiContext;
 import com.google.maps.PendingResult;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.internal.PolylineEncoding;
 import com.google.maps.model.DirectionsResult;
+import com.google.maps.model.DirectionsRoute;
 import com.google.maps.model.TransitMode;
 import com.google.maps.model.TravelMode;
 import com.trackigandchatting.R;
 import com.trackigandchatting.chat_adapters.AllFriendsAdapter;
 import com.trackigandchatting.models.ChatsModel;
 import com.trackigandchatting.models.ClusterMarker;
+import com.trackigandchatting.models.PolylineData;
 import com.trackigandchatting.models.UserLocation;
 import com.trackigandchatting.util.MyClusterManagerRenderer;
 import com.trackigandchatting.util.ViewWeightAnimationWrapper;
@@ -68,9 +76,11 @@ import com.trackigandchatting.util.ViewWeightAnimationWrapper;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class FriendsListActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener,  ClusterManager.OnClusterItemInfoWindowClickListener<ClusterMarker> {
+public class FriendsListActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener,
+        ClusterManager.OnClusterItemInfoWindowClickListener<ClusterMarker>, GoogleMap.OnPolylineClickListener {
 
     private static final int MAP_LAYOUT_STATE_CONTRACTED = 0;
     private static final int MAP_LAYOUT_STATE_EXPANDED = 1;
@@ -82,6 +92,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
 
     private ArrayList<ClusterMarker> mClusterMarkers = new ArrayList<>();
     private ArrayList<UserLocation> mUserLocations = new ArrayList<>();
+    private ArrayList<PolylineData> mPolylineData = new ArrayList<>();
 
     private ClusterManager<ClusterMarker> mClusterManager;
     private MyClusterManagerRenderer mClusterManagerRenderer;
@@ -294,18 +305,23 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
 
                 Log.d(TAG, "addMapMarkers: location: " + userLocation.getGeo_point().toString());
                 try {
+
                     String snippet = "";
+
+                    int avatar = R.drawable.cartman_cop; // set the default avatar
+
                     if (userLocation.getUid().equals(FirebaseAuth.getInstance().getUid())) {
                         snippet = "This is you";
+                        avatar=R.drawable.cwm_logo;
                     } else {
                         snippet = "Determine route to " + userLocation.getName() + "?";
                     }
 
-                    int avatar = R.drawable.cartman_cop; // set the default avatar
-                   /* try{
+
+                   /*try{
                         avatar = Integer.parseInt(userLocation.getUser().getAvatar());
                     }catch (NumberFormatException e){
-                        Log.d(TAG, "addMapMarkers: no avatar for " + userLocation.getUser().getUsername() + ", setting default.");
+                        Log.d(TAG, "addMapMarkers: no avatar for " + userLocation.getName() + ", setting default.");
                     }*/
                     ClusterMarker newClusterMarker = new ClusterMarker(
                             new LatLng(userLocation.getGeo_point().getLatitude(), userLocation.getGeo_point().getLongitude()),
@@ -399,6 +415,67 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
 
             }
         });
+    }
+    private void addPolylinesToMap(final DirectionsResult result){
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+
+                Log.d(TAG, "run: result routes: " + result.routes.length);
+
+                //remove all polyline if new user selected
+                if(mPolylineData.size() > 0){
+                    for(PolylineData polylineData: mPolylineData){
+                        polylineData.getPolyline().remove();
+                    }
+                    mPolylineData.clear();
+                    mPolylineData = new ArrayList<>();
+                }
+
+                for(DirectionsRoute route: result.routes){
+                    Log.d(TAG, "run: leg: " + route.legs[0].toString());
+                    List<com.google.maps.model.LatLng> decodedPath = PolylineEncoding.decode(route.overviewPolyline.getEncodedPath());
+
+                    List<LatLng> newDecodedPath = new ArrayList<>();
+
+                    // This loops through all the LatLng coordinates of ONE polyline.
+                    for(com.google.maps.model.LatLng latLng: decodedPath){
+
+//                        Log.d(TAG, "run: latlng: " + latLng.toString());
+
+                        newDecodedPath.add(new LatLng(
+                                latLng.lat,
+                                latLng.lng
+                        ));
+                    }
+                    Polyline polyline = googleMap.addPolyline(new PolylineOptions().addAll(newDecodedPath));
+                    polyline.setColor(ContextCompat.getColor(FriendsListActivity.this, R.color.darkGrey));
+                    polyline.setClickable(true);
+
+                    googleMap.setOnPolylineClickListener(FriendsListActivity.this); // suer can select the root
+
+                    mPolylineData.add(new PolylineData(polyline,route.legs[0]));
+
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onPolylineClick(@NonNull Polyline polyline) {
+
+
+        for(PolylineData polylineData: mPolylineData){
+
+            if(polyline.getId().equals(polylineData.getPolyline().getId())){
+                polylineData.getPolyline().setColor(ContextCompat.getColor(this, R.color.blue));
+                polylineData.getPolyline().setZIndex(1);// line elevation
+            }
+            else{
+                polylineData.getPolyline().setColor(ContextCompat.getColor(this, R.color.darkGrey));
+                polylineData.getPolyline().setZIndex(0);
+            }
+        }
     }
 
 
@@ -564,6 +641,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
 
        // directions.mode(TravelMode.BICYCLING); can change the travel mode WALKING, DRIVING, BICYCLING
 
+        //my location
         directions.origin(
                 new com.google.maps.model.LatLng(
                         userLocationForGeoPoints.getGeo_point().getLatitude(),
@@ -574,12 +652,14 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
         directions.destination(destination).setCallback(new PendingResult.Callback<DirectionsResult>() {
             @Override
             public void onResult(DirectionsResult result) {
-                Log.d(TAG, "onResult: all: " + result.routes.length);
+             /*   Log.d(TAG, "onResult: all: " + result.routes.length);
                 Log.d(TAG, "onResult: routes: " + result.routes[0].toString());
                 Log.d(TAG, "onResult: duration: " + result.routes[0].legs[0].duration);
                 Log.d(TAG, "onResult: distance: " + result.routes[0].legs[0].distance);
                 Log.d(TAG, "onResult: durationInTraffic: " + result.routes[0].legs[0].durationInTraffic);
                 Log.d(TAG, "onResult: geocodedWayPoints: " + result.geocodedWaypoints[0].toString());
+*/
+                addPolylinesToMap(result);
             }
 
             @Override
@@ -589,4 +669,5 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
             }
         });
     }
+
 }
