@@ -49,8 +49,14 @@ import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.maps.DirectionsApiRequest;
+import com.google.maps.GeoApiContext;
+import com.google.maps.PendingResult;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.model.DirectionsResult;
+import com.google.maps.model.TransitMode;
+import com.google.maps.model.TravelMode;
 import com.trackigandchatting.R;
 import com.trackigandchatting.chat_adapters.AllFriendsAdapter;
 import com.trackigandchatting.models.ChatsModel;
@@ -64,11 +70,22 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FriendsListActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener, GoogleMap.OnInfoWindowClickListener, ClusterManager.OnClusterItemInfoWindowClickListener<ClusterMarker> {
+public class FriendsListActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener,  ClusterManager.OnClusterItemInfoWindowClickListener<ClusterMarker> {
 
     private static final int MAP_LAYOUT_STATE_CONTRACTED = 0;
     private static final int MAP_LAYOUT_STATE_EXPANDED = 1;
     private int mMapLayoutState = 0;
+
+    private Handler mHandler = new Handler();
+    private Runnable mRunnable;
+    private static final int LOCATION_UPDATE_INTERVAL = 3000;
+
+    private ArrayList<ClusterMarker> mClusterMarkers = new ArrayList<>();
+    private ArrayList<UserLocation> mUserLocations = new ArrayList<>();
+
+    private ClusterManager<ClusterMarker> mClusterManager;
+    private MyClusterManagerRenderer mClusterManagerRenderer;
+    private GeoApiContext mGeoApiContext;
 
     FirebaseAuth firebaseAuth;
     FirebaseFirestore firebaseFirestore;
@@ -81,15 +98,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
     RelativeLayout map_container;
     ImageButton btn_full_screen_map;
 
-    private ClusterManager<ClusterMarker> mClusterManager;
-    private MyClusterManagerRenderer mClusterManagerRenderer;
-
-    private ArrayList<ClusterMarker> mClusterMarkers = new ArrayList<>();
-    private ArrayList<UserLocation> mUserLocations = new ArrayList<>();
-
-    private Handler mHandler = new Handler();
-    private Runnable mRunnable;
-    private static final int LOCATION_UPDATE_INTERVAL = 3000;
+    UserLocation userLocationForGeoPoints = new UserLocation();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -252,6 +261,12 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
 
         mapFragment.getMapAsync(this); //onMapReady method automatically call. your Default map
 
+        if(mGeoApiContext==null){
+            mGeoApiContext = new GeoApiContext.Builder()
+                    .apiKey(getString(R.string.google_map_api_key))
+                    .build();
+        }
+
     }
 
 
@@ -373,7 +388,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
 
                 Location location = (Location) task.getResult();
 
-                UserLocation userLocationForGeoPoints = new UserLocation();
+
                 userLocationForGeoPoints.setUid(firebaseAuth.getUid());
                 userLocationForGeoPoints.setGeo_point(new GeoPoint(location.getLatitude(), location.getLongitude()));
                 userLocationForGeoPoints.setName("kalindu");
@@ -509,12 +524,6 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
     }
 
     @Override
-    public void onInfoWindowClick(@NonNull Marker marker) {
-
-
-    }
-
-    @Override
     public void onClusterItemInfoWindowClick(ClusterMarker item) {
 
         if (!item.getSnippet().equals("This is you")) { // not equal to userId
@@ -524,7 +533,8 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                     .setCancelable(true)
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
-                            dialog.dismiss();
+                           // dialog.dismiss();
+                            calculateDirections(item);
                         }
                     })
                     .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -536,5 +546,47 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
             alert.show();
         }
 
+    }
+
+    private void calculateDirections(ClusterMarker marker){
+
+        //https://developers.google.com/maps/documentation/directions/get-directions
+
+        Log.d(TAG, "calculateDirections: calculating directions.");
+
+        com.google.maps.model.LatLng destination = new com.google.maps.model.LatLng(
+                marker.getPosition().latitude,
+                marker.getPosition().longitude
+        );
+        DirectionsApiRequest directions = new DirectionsApiRequest(mGeoApiContext);
+
+        directions.alternatives(true);
+
+       // directions.mode(TravelMode.BICYCLING); can change the travel mode WALKING, DRIVING, BICYCLING
+
+        directions.origin(
+                new com.google.maps.model.LatLng(
+                        userLocationForGeoPoints.getGeo_point().getLatitude(),
+                        userLocationForGeoPoints.getGeo_point().getLongitude()
+                )
+        );
+        Log.d(TAG, "calculateDirections: destination: " + destination.toString());
+        directions.destination(destination).setCallback(new PendingResult.Callback<DirectionsResult>() {
+            @Override
+            public void onResult(DirectionsResult result) {
+                Log.d(TAG, "onResult: all: " + result.routes.length);
+                Log.d(TAG, "onResult: routes: " + result.routes[0].toString());
+                Log.d(TAG, "onResult: duration: " + result.routes[0].legs[0].duration);
+                Log.d(TAG, "onResult: distance: " + result.routes[0].legs[0].distance);
+                Log.d(TAG, "onResult: durationInTraffic: " + result.routes[0].legs[0].durationInTraffic);
+                Log.d(TAG, "onResult: geocodedWayPoints: " + result.geocodedWaypoints[0].toString());
+            }
+
+            @Override
+            public void onFailure(Throwable e) {
+                Log.e(TAG, "onFailure: " + e.getMessage() );
+
+            }
+        });
     }
 }
