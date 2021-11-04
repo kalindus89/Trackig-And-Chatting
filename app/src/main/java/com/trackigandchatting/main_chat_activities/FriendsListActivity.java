@@ -4,18 +4,24 @@ import static android.content.ContentValues.TAG;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.animation.ObjectAnimator;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
@@ -28,6 +34,7 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -42,6 +49,7 @@ import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 import com.trackigandchatting.R;
 import com.trackigandchatting.chat_adapters.AllFriendsAdapter;
@@ -49,13 +57,18 @@ import com.trackigandchatting.models.ChatsModel;
 import com.trackigandchatting.models.ClusterMarker;
 import com.trackigandchatting.models.UserLocation;
 import com.trackigandchatting.util.MyClusterManagerRenderer;
+import com.trackigandchatting.util.ViewWeightAnimationWrapper;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FriendsListActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class FriendsListActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener, GoogleMap.OnInfoWindowClickListener, ClusterManager.OnClusterItemInfoWindowClickListener<ClusterMarker> {
+
+    private static final int MAP_LAYOUT_STATE_CONTRACTED = 0;
+    private static final int MAP_LAYOUT_STATE_EXPANDED = 1;
+    private int mMapLayoutState = 0;
 
     FirebaseAuth firebaseAuth;
     FirebaseFirestore firebaseFirestore;
@@ -65,6 +78,8 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
     FusedLocationProviderClient fusedLocationProviderClient;
     MapFragment mapFragment;
     LatLngBounds mMapBoundary;
+    RelativeLayout map_container;
+    ImageButton btn_full_screen_map;
 
     private ClusterManager<ClusterMarker> mClusterManager;
     private MyClusterManagerRenderer mClusterManagerRenderer;
@@ -86,7 +101,11 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseFirestore = FirebaseFirestore.getInstance();
         recyclerViewChat = findViewById(R.id.recyclerViewFriendList);
-         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.user_list_map);
+        map_container = findViewById(R.id.map_container);
+        mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.user_list_map);
+        btn_full_screen_map = findViewById(R.id.btn_full_screen_map);
+        btn_full_screen_map.setOnClickListener(this);
+
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(FriendsListActivity.this);
 
         runOnUiThread(new Runnable() {
@@ -114,7 +133,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
     }
 
     //update users locations on map very 3s
-    private void startUserLocationsRunnable(){
+    private void startUserLocationsRunnable() {
         Log.d(TAG, "startUserLocationsRunnable: starting runnable for retrieving updated locations.");
         mHandler.postDelayed(mRunnable = new Runnable() {
             @Override
@@ -125,15 +144,15 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
         }, LOCATION_UPDATE_INTERVAL);
     }
 
-    private void stopLocationUpdates(){
+    private void stopLocationUpdates() {
         mHandler.removeCallbacks(mRunnable);
     }
 
-    private void retrieveUserLocations(){
+    private void retrieveUserLocations() {
         Log.d(TAG, "retrieveUserLocations: retrieving location of all users in the chatroom.");
 
-        try{
-            for(final ClusterMarker clusterMarker: mClusterMarkers){
+        try {
+            for (final ClusterMarker clusterMarker : mClusterMarkers) {
 
                 DocumentReference userLocationRef = FirebaseFirestore.getInstance()
                         .collection("UserCurrentLocation")
@@ -142,7 +161,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                 userLocationRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if(task.isSuccessful()){
+                        if (task.isSuccessful()) {
 
                             final UserLocation updatedUserLocation = task.getResult().toObject(UserLocation.class);
 
@@ -169,21 +188,21 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                     }
                 });
             }
-        }catch (IllegalStateException e){
-            Log.e(TAG, "retrieveUserLocations: Fragment was destroyed during Firestore query. Ending query." + e.getMessage() );
+        } catch (IllegalStateException e) {
+            Log.e(TAG, "retrieveUserLocations: Fragment was destroyed during Firestore query. Ending query." + e.getMessage());
         }
 
     }
 
     private void getAllUserLocationsFromFirebase() {
 
-        CollectionReference collectionReference =firebaseFirestore.collection("Users").document(firebaseAuth.getUid()).collection("myChats");
+        CollectionReference collectionReference = firebaseFirestore.collection("Users").document(firebaseAuth.getUid()).collection("myChats");
         collectionReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
 
-                for(QueryDocumentSnapshot queryDocumentSnapshot:value){
-                    getFriendGeoCode(queryDocumentSnapshot.get("uid").toString(),value.size());
+                for (QueryDocumentSnapshot queryDocumentSnapshot : value) {
+                    getFriendGeoCode(queryDocumentSnapshot.get("uid").toString(), value.size());
                 }
 
 
@@ -191,6 +210,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
         });
 
     }
+
     private void getFriendGeoCode(String uid, int numberOfFriends) {
 
 
@@ -202,11 +222,11 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
-                      //  userLocationForGeoPoints=task.getResult().toObject(UserLocation.class);
+                        //  userLocationForGeoPoints=task.getResult().toObject(UserLocation.class);
 
                         mUserLocations.add(task.getResult().toObject(UserLocation.class));
 
-                        if(mUserLocations.size()==(numberOfFriends+1)){
+                        if (mUserLocations.size() == (numberOfFriends + 1)) {
                             addMapMakers();
                         }
                         //System.out.println("aaaaaaaa2222 "+userLocationForGeoPoints.getGeo_point().getLatitude()+" "+userLocationForGeoPoints.getGeo_point().getLongitude());
@@ -221,6 +241,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
         });
 
     }
+
     private void showMap() {
 
         // if you use mapfragment then lifecycle methods are not needed
@@ -234,17 +255,17 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
     }
 
 
-    private void addMapMakers(){
+    private void addMapMakers() {
         // clusters use to customized markers.(with images and avatars. when map zoom out avatars combine together)
         //but for project we use only single clusters. means not grouping when zoom out
         // https://developers.google.com/maps/documentation/android-sdk/utility/marker-clustering?hl=en
 
-        if(googleMap != null){
-            if(mClusterManager == null){
+        if (googleMap != null) {
+            if (mClusterManager == null) {
                 mClusterManager = new ClusterManager<ClusterMarker>(getApplicationContext(), googleMap);
             }
 
-            if(mClusterManagerRenderer == null){
+            if (mClusterManagerRenderer == null) {
                 mClusterManagerRenderer = new MyClusterManagerRenderer(
                         getApplicationContext(),
                         googleMap,
@@ -253,15 +274,15 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                 mClusterManager.setRenderer(mClusterManagerRenderer);
             }
 
-            for(UserLocation userLocation: mUserLocations){
+
+            for (UserLocation userLocation : mUserLocations) {
 
                 Log.d(TAG, "addMapMarkers: location: " + userLocation.getGeo_point().toString());
-                try{
+                try {
                     String snippet = "";
-                    if(userLocation.getUid().equals(FirebaseAuth.getInstance().getUid())){
+                    if (userLocation.getUid().equals(FirebaseAuth.getInstance().getUid())) {
                         snippet = "This is you";
-                    }
-                    else{
+                    } else {
                         snippet = "Determine route to " + userLocation.getName() + "?";
                     }
 
@@ -275,17 +296,22 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                             new LatLng(userLocation.getGeo_point().getLatitude(), userLocation.getGeo_point().getLongitude()),
                             userLocation.getName(),
                             snippet,
-                            avatar,userLocation.getUid()
+                            avatar, userLocation.getUid()
                     );
                     mClusterManager.addItem(newClusterMarker);
                     mClusterMarkers.add(newClusterMarker);
 
-                }catch (NullPointerException e){
-                    Log.e(TAG, "addMapMarkers: NullPointerException: " + e.getMessage() );
+                } catch (NullPointerException e) {
+                    Log.e(TAG, "addMapMarkers: NullPointerException: " + e.getMessage());
                 }
 
             }
             mClusterManager.cluster();
+
+            mClusterManager.setOnClusterItemInfoWindowClickListener(this);
+
+
+            // googleMap.setOnInfoWindowClickListener(this);
 
             markOnMapForZoomBoundary((new GeoPoint(6.8649, 79.8997)));
 
@@ -293,18 +319,18 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
 
     }
 
-    public void markOnMapForZoomBoundary(GeoPoint geoPoint){
+    public void markOnMapForZoomBoundary(GeoPoint geoPoint) {
 
         //zoom specific area
 
-        double bottomBoundary=geoPoint.getLatitude()-.1;
-        double leftBoundary=geoPoint.getLongitude()-.1;
-        double topBoundary=geoPoint.getLatitude()+.1;
-        double rightBoundary=geoPoint.getLongitude()+.1;
+        double bottomBoundary = geoPoint.getLatitude() - .1;
+        double leftBoundary = geoPoint.getLongitude() - .1;
+        double topBoundary = geoPoint.getLatitude() + .1;
+        double rightBoundary = geoPoint.getLongitude() + .1;
 
-        mMapBoundary= new LatLngBounds(new LatLng(bottomBoundary,leftBoundary),new LatLng(topBoundary,rightBoundary));
+        mMapBoundary = new LatLngBounds(new LatLng(bottomBoundary, leftBoundary), new LatLng(topBoundary, rightBoundary));
 
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(mMapBoundary,0));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(mMapBoundary, 0));
 
     }
 
@@ -356,7 +382,6 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                 getAllUserLocationsFromFirebase();
 
 
-
             }
         });
     }
@@ -364,9 +389,12 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-        this.googleMap=googleMap;
+        this.googleMap = googleMap;
 
         getUserKnowLocation();
+
+        //when click on clustermaker snippet, dialog box will appear. check onInfoWindowClick()
+
 
         googleMap.getUiSettings().setZoomControlsEnabled(true);
         googleMap.getUiSettings().setCompassEnabled(true); // Compass not showing until you rotate the map
@@ -392,17 +420,59 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
 
     private void syncChatPeopleFromFirestore() {
 
-        Query query = firebaseFirestore.collection("Users").whereNotEqualTo("uid",firebaseAuth.getUid());
+        Query query = firebaseFirestore.collection("Users").whereNotEqualTo("uid", firebaseAuth.getUid());
         FirestoreRecyclerOptions<ChatsModel> allChats = new FirestoreRecyclerOptions.Builder<ChatsModel>().setQuery(query, ChatsModel.class).build();
 
-        allChatsAdapter = new AllFriendsAdapter(this,allChats);
+        allChatsAdapter = new AllFriendsAdapter(this, allChats);
         recyclerViewChat.setHasFixedSize(true);
-        LinearLayoutManager linearLayoutManager =new LinearLayoutManager(this);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
         recyclerViewChat.setLayoutManager(linearLayoutManager);
         recyclerViewChat.setAdapter(allChatsAdapter);
         allChatsAdapter.notifyDataSetChanged();
     }
+
+
+    //expand map with animation
+    private void expandMapAnimation() {
+        ViewWeightAnimationWrapper mapAnimationWrapper = new ViewWeightAnimationWrapper(map_container);
+        ObjectAnimator mapAnimation = ObjectAnimator.ofFloat(mapAnimationWrapper,
+                "weight",
+                50,
+                100);
+        mapAnimation.setDuration(800);
+
+        ViewWeightAnimationWrapper recyclerAnimationWrapper = new ViewWeightAnimationWrapper(recyclerViewChat);
+        ObjectAnimator recyclerAnimation = ObjectAnimator.ofFloat(recyclerAnimationWrapper,
+                "weight",
+                50,
+                0);
+        recyclerAnimation.setDuration(800);
+
+        recyclerAnimation.start();
+        mapAnimation.start();
+    }
+
+    //contract map with animation
+    private void contractMapAnimation() {
+        ViewWeightAnimationWrapper mapAnimationWrapper = new ViewWeightAnimationWrapper(map_container);
+        ObjectAnimator mapAnimation = ObjectAnimator.ofFloat(mapAnimationWrapper,
+                "weight",
+                100,
+                50);
+        mapAnimation.setDuration(800);
+
+        ViewWeightAnimationWrapper recyclerAnimationWrapper = new ViewWeightAnimationWrapper(recyclerViewChat);
+        ObjectAnimator recyclerAnimation = ObjectAnimator.ofFloat(recyclerAnimationWrapper,
+                "weight",
+                0,
+                50);
+        recyclerAnimation.setDuration(800);
+
+        recyclerAnimation.start();
+        mapAnimation.start();
+    }
+
     @Override
     public void onStart() {
         super.onStart();
@@ -414,10 +484,57 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
     public void onStop() {
         super.onStop();
 
-        if(allChatsAdapter!=null)
-        {
+        if (allChatsAdapter != null) {
             allChatsAdapter.stopListening();
             //noteAdapter.startListening();
         }
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.btn_full_screen_map: {
+
+                if (mMapLayoutState == MAP_LAYOUT_STATE_CONTRACTED) {
+                    mMapLayoutState = MAP_LAYOUT_STATE_EXPANDED;
+                    expandMapAnimation();
+                } else if (mMapLayoutState == MAP_LAYOUT_STATE_EXPANDED) {
+                    mMapLayoutState = MAP_LAYOUT_STATE_CONTRACTED;
+                    contractMapAnimation();
+                }
+                break;
+            }
+
+        }
+    }
+
+    @Override
+    public void onInfoWindowClick(@NonNull Marker marker) {
+
+
+    }
+
+    @Override
+    public void onClusterItemInfoWindowClick(ClusterMarker item) {
+
+        if (!item.getSnippet().equals("This is you")) { // not equal to userId
+
+            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(item.getSnippet())
+                    .setCancelable(true)
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                            dialog.cancel();
+                        }
+                    });
+            final AlertDialog alert = builder.create();
+            alert.show();
+        }
+
     }
 }

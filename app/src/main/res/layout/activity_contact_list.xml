@@ -139,7 +139,7 @@
             android:id="@+id/recyclerViewFriendList"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="50"/>
+            android:layout_weight="50" />
 
         <RelativeLayout
             android:id="@+id/map_container"
@@ -152,6 +152,18 @@
                 class="com.google.android.gms.maps.MapFragment"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
+
+            <ImageButton
+                android:id="@+id/btn_full_screen_map"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_marginTop="15dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginRight="10dp"
+                android:background="@color/white"
+                android:src="@drawable/ic_full_screen_black_24dp" />
         </RelativeLayout>
 
 
