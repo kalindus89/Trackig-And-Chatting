@@ -16,11 +16,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -117,7 +119,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
     MapFragment mapFragment;
     LatLngBounds mMapBoundary;
     RelativeLayout map_container;
-    ImageButton btn_full_screen_map;
+    ImageButton btn_full_screen_map,btn_reset,open_in_google_map;
     private Marker mSelectedMarker = null;
 
     UserLocation userLocationForGeoPoints = new UserLocation();
@@ -136,6 +138,10 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.user_list_map);
         btn_full_screen_map = findViewById(R.id.btn_full_screen_map);
         btn_full_screen_map.setOnClickListener(this);
+        btn_reset = findViewById(R.id.btn_reset);
+        btn_reset.setOnClickListener(this);
+        open_in_google_map = findViewById(R.id.open_in_google_map);
+        open_in_google_map.setOnClickListener(this);
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(FriendsListActivity.this);
 
@@ -298,6 +304,10 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
         // https://developers.google.com/maps/documentation/android-sdk/utility/marker-clustering?hl=en
 
         if (googleMap != null) {
+
+            resetMap();
+            open_in_google_map.setVisibility(View.GONE);
+
             if (mClusterManager == null) {
                 mClusterManager = new ClusterManager<ClusterMarker>(getApplicationContext(), googleMap);
             }
@@ -358,6 +368,26 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
 
         }
 
+    }
+
+    private void resetMap(){
+        if(googleMap != null) {
+            googleMap.clear();
+
+            if(mClusterManager != null){
+                mClusterManager.clearItems();
+            }
+
+            if (mClusterMarkers.size() > 0) {
+                mClusterMarkers.clear();
+                mClusterMarkers = new ArrayList<>();
+            }
+
+            if(mPolylineData.size() > 0){
+                mPolylineData.clear();
+                mPolylineData = new ArrayList<>();
+            }
+        }
     }
 
     public void markOnMapForZoomBoundary(GeoPoint geoPoint) {
@@ -489,6 +519,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                         // mark the shortest path on map(automatically selected the path in blue color)
                         duration=tempDuration;
                         onPolylineClick(polyline);
+                        zoomRoute(polyline.getPoints());
                     }
 
                 }
@@ -507,6 +538,9 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
             index++;
 
             if(polyline.getId().equals(polylineData.getPolyline().getId())){
+
+                open_in_google_map.setVisibility(View.VISIBLE);
+
                 polylineData.getPolyline().setColor(ContextCompat.getColor(this, R.color.blue));
                 polylineData.getPolyline().setZIndex(1);// line elevation
 
@@ -531,11 +565,27 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                 .title("Trip #"+index)
                 .snippet("Duration: "+polylineData.getLeg().duration));
         marker.showInfoWindow();
-
         mTripMakers.add(marker);
 
     }
 
+    public void zoomRoute(List<LatLng> lstLatLngRoute) {
+
+        if (googleMap == null || lstLatLngRoute == null || lstLatLngRoute.isEmpty()) return;
+
+        LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
+        for (LatLng latLngPoint : lstLatLngRoute)
+            boundsBuilder.include(latLngPoint);
+
+        int routePadding = 50;
+        LatLngBounds latLngBounds = boundsBuilder.build();
+
+        googleMap.animateCamera(
+                CameraUpdateFactory.newLatLngBounds(latLngBounds, routePadding),
+                600,
+                null
+        );
+    }
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
@@ -654,6 +704,46 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                 }
                 break;
             }
+            case R.id.btn_reset: {
+
+                addMapMakers();
+                break;
+            }
+            case R.id.open_in_google_map: {
+
+                if(!mSelectedMarker.getTitle().isEmpty()){
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setMessage("Open Google Maps?")
+                            .setCancelable(true)
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                    String latitude = String.valueOf(mSelectedMarker.getPosition().latitude);
+                                    String longitude = String.valueOf(mSelectedMarker.getPosition().longitude);
+                                    Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + "," + longitude);
+                                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                                    mapIntent.setPackage("com.google.android.apps.maps");
+
+                                    try{
+                                        if (mapIntent.resolveActivity(getPackageManager()) != null) {
+                                            startActivity(mapIntent);
+                                        }
+                                    }catch (NullPointerException e){
+                                        Log.e(TAG, "onClick: NullPointerException: Couldn't open map." + e.getMessage() );
+                                        Toast.makeText(FriendsListActivity.this, "Couldn't open map", Toast.LENGTH_SHORT).show();
+                                    }
+
+                                }
+                            })
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                    dialog.cancel();
+                                }
+                            });
+                    final AlertDialog alert = builder.create();
+                    alert.show();
+                }
+                break;
+            }
 
         }
     }
@@ -668,6 +758,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
         vectorDrawable.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
+
 
     @Override
     public void onClusterItemInfoWindowClick(ClusterMarker item) {
