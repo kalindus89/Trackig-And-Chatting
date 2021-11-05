@@ -23,6 +23,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 import com.trackigandchatting.R;
 import com.trackigandchatting.SessionManagement;
+import com.trackigandchatting.main_chat_activities.FriendsListActivity;
 import com.trackigandchatting.models.ChatsModel;
 
 import java.util.ArrayList;
@@ -35,10 +36,10 @@ import java.util.Map;
 
 public class AllFriendsAdapter extends FirestoreRecyclerAdapter<ChatsModel, AllFriendsAdapter.ChatsViewHolder> {
 
-    Activity context;
+    FriendsListActivity context;
     FirestoreRecyclerOptions<ChatsModel> fireStoreRecyclerOptions;
 
-    public AllFriendsAdapter(@NonNull Activity context, FirestoreRecyclerOptions<ChatsModel> fireStoreRecyclerOptions) {
+    public AllFriendsAdapter(@NonNull FriendsListActivity context, FirestoreRecyclerOptions<ChatsModel> fireStoreRecyclerOptions) {
         super(fireStoreRecyclerOptions);
         this.context = context;
         this.fireStoreRecyclerOptions = fireStoreRecyclerOptions;
@@ -82,7 +83,7 @@ public class AllFriendsAdapter extends FirestoreRecyclerAdapter<ChatsModel, AllF
                             DocumentSnapshot document = task.getResult();
                             if (document.exists()) {
                                 Toast.makeText(context, "Already created", Toast.LENGTH_SHORT).show();
-
+                                context.moveCamaraOnFriendClick(holder.getAbsoluteAdapterPosition());
                             } else {
                                 crateChatRoom(chatRoomId,model.getName(),FirebaseAuth.getInstance().getUid(),model.getUid(),model.getImage());
 

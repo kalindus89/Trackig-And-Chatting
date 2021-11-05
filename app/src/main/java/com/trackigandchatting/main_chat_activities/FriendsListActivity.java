@@ -835,4 +835,19 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
         });
     }
 
+    public void moveCamaraOnFriendClick(int position){
+        String selectedUserId = mUserLocations.get(position+1).getUid(); //position+1 because user Uid manually added to the list
+
+        for(ClusterMarker clusterMarker: mClusterMarkers){
+            if(selectedUserId.equals(clusterMarker.getuId())){
+                googleMap.animateCamera(CameraUpdateFactory.newLatLng(
+                        new LatLng(clusterMarker.getPosition().latitude, clusterMarker.getPosition().longitude)),
+                        600,
+                        null
+                );
+                break;
+            }
+        }
+    }
+
 }
