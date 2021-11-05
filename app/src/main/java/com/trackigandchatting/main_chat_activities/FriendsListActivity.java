@@ -2,12 +2,14 @@ package com.trackigandchatting.main_chat_activities;
 
 import static android.content.ContentValues.TAG;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -15,6 +17,9 @@ import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -34,6 +39,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -79,6 +86,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import kotlin.collections.MapsKt;
+
 public class FriendsListActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener,
         ClusterManager.OnClusterItemInfoWindowClickListener<ClusterMarker>, GoogleMap.OnPolylineClickListener {
 
@@ -93,6 +102,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
     private ArrayList<ClusterMarker> mClusterMarkers = new ArrayList<>();
     private ArrayList<UserLocation> mUserLocations = new ArrayList<>();
     private ArrayList<PolylineData> mPolylineData = new ArrayList<>();
+    private ArrayList<Marker> mTripMakers = new ArrayList<>();// keep track of tripe makers. if user select another trip, then previous marker remove and new marker appear
 
     private ClusterManager<ClusterMarker> mClusterManager;
     private MyClusterManagerRenderer mClusterManagerRenderer;
@@ -108,6 +118,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
     LatLngBounds mMapBoundary;
     RelativeLayout map_container;
     ImageButton btn_full_screen_map;
+    private Marker mSelectedMarker = null;
 
     UserLocation userLocationForGeoPoints = new UserLocation();
 
@@ -341,7 +352,6 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
 
             mClusterManager.setOnClusterItemInfoWindowClickListener(this);
 
-
             // googleMap.setOnInfoWindowClickListener(this);
 
             markOnMapForZoomBoundary((new GeoPoint(6.8649, 79.8997)));
@@ -416,12 +426,27 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
             }
         });
     }
+
+    private void removeTripMarkers(){
+        for (Marker marker: mTripMakers){
+            marker.remove();
+        }
+    }
+
+    private void resetSelectedMaker(){
+        if(mSelectedMarker !=null){
+            mSelectedMarker.setVisible(true);
+            mSelectedMarker=null;
+            removeTripMarkers();
+
+        }
+    }
+
     private void addPolylinesToMap(final DirectionsResult result){
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
 
-                Log.d(TAG, "run: result routes: " + result.routes.length);
 
                 //remove all polyline if new user selected
                 if(mPolylineData.size() > 0){
@@ -432,8 +457,8 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                     mPolylineData = new ArrayList<>();
                 }
 
+                double duration =999999999;
                 for(DirectionsRoute route: result.routes){
-                    Log.d(TAG, "run: leg: " + route.legs[0].toString());
                     List<com.google.maps.model.LatLng> decodedPath = PolylineEncoding.decode(route.overviewPolyline.getEncodedPath());
 
                     List<LatLng> newDecodedPath = new ArrayList<>();
@@ -456,6 +481,16 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
 
                     mPolylineData.add(new PolylineData(polyline,route.legs[0]));
 
+                    mSelectedMarker.setVisible(false); // remove maker when polyline is selected
+
+                    double tempDuration=route.legs[0].duration.inSeconds;
+
+                    if(tempDuration<duration){
+                        // mark the shortest path on map(automatically selected the path in blue color)
+                        duration=tempDuration;
+                        onPolylineClick(polyline);
+                    }
+
                 }
             }
         });
@@ -465,17 +500,40 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
     public void onPolylineClick(@NonNull Polyline polyline) {
 
 
+        int index=0;
+
         for(PolylineData polylineData: mPolylineData){
+
+            index++;
 
             if(polyline.getId().equals(polylineData.getPolyline().getId())){
                 polylineData.getPolyline().setColor(ContextCompat.getColor(this, R.color.blue));
                 polylineData.getPolyline().setZIndex(1);// line elevation
+
+                calculateDuration(polylineData,index);
+
             }
             else{
                 polylineData.getPolyline().setColor(ContextCompat.getColor(this, R.color.darkGrey));
                 polylineData.getPolyline().setZIndex(0);
             }
         }
+    }
+
+    private void calculateDuration(PolylineData polylineData, int index) {
+
+        LatLng endLocation = new LatLng(
+                polylineData.getLeg().endLocation.lat,
+                polylineData.getLeg().endLocation.lng);
+
+        Marker marker =googleMap.addMarker(new MarkerOptions()
+                .position(endLocation)
+                .title("Trip #"+index)
+                .snippet("Duration: "+polylineData.getLeg().duration));
+        marker.showInfoWindow();
+
+        mTripMakers.add(marker);
+
     }
 
 
@@ -600,6 +658,17 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
         }
     }
 
+
+    private BitmapDescriptor getBitmapDescriptor(@DrawableRes int id) {
+        Drawable vectorDrawable = ResourcesCompat.getDrawable(getResources(), id, null);
+        Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(),
+                vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        vectorDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        vectorDrawable.draw(canvas);
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
     @Override
     public void onClusterItemInfoWindowClick(ClusterMarker item) {
 
@@ -610,8 +679,13 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                     .setCancelable(true)
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
-                           // dialog.dismiss();
+
+                            //used to get the data of selected location to change avatar to marker.
+                            resetSelectedMaker();
+                            mSelectedMarker=mClusterManagerRenderer.getMarker(item); // get the maker
                             calculateDirections(item);
+
+                            dialog.dismiss();
                         }
                     })
                     .setNegativeButton("No", new DialogInterface.OnClickListener() {
