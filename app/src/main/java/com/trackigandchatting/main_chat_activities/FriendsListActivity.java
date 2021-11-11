@@ -298,6 +298,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
     }
 
 
+
     private void addMapMakers() {
         // clusters use to customized markers.(with images and avatars. when map zoom out avatars combine together)
         //but for project we use only single clusters. means not grouping when zoom out
