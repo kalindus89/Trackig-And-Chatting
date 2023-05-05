@@ -84,7 +84,6 @@
                 android:layout_gravity="center"
                 android:src="@drawable/profile_icon"/>
 
-
         </androidx.cardview.widget.CardView>
 
         <EditText

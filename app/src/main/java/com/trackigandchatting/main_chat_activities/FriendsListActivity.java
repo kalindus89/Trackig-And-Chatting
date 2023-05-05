@@ -508,7 +508,7 @@ public class FriendsListActivity extends AppCompatActivity implements OnMapReady
                     polyline.setColor(ContextCompat.getColor(FriendsListActivity.this, R.color.darkGrey));
                     polyline.setClickable(true);
 
-                    googleMap.setOnPolylineClickListener(FriendsListActivity.this); // suer can select the root
+                    googleMap.setOnPolylineClickListener(FriendsListActivity.this); // uer can select the root
 
                     mPolylineData.add(new PolylineData(polyline,route.legs[0]));
 
